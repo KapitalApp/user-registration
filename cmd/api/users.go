@@ -20,7 +20,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"time"
-	"user-registration.kptl.net/internal/data"
+	"user-service.kptl.net/internal/data"
 )
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {

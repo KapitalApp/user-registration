@@ -1,4 +1,4 @@
-module user-registration.kptl.net
+module user-service.kptl.net
 
 go 1.18
 
