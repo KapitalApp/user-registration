@@ -53,7 +53,7 @@ func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) 
 		}},
 	}
 
-	err = app.writeJSON(w, http.StatusOK, user, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
