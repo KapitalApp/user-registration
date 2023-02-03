@@ -2,4 +2,7 @@ module user-registration.kptl.net
 
 go 1.18
 
-require github.com/julienschmidt/httprouter v1.3.0 // indirect
+require (
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/julienschmidt/httprouter v1.3.0 // indirect
+)
