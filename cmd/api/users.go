@@ -17,7 +17,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net/http"
+	"time"
+	"user-registration.kptl.net/internal/data"
 )
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,11 +28,34 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
-	if err != nil || id < 1 {
+	id, err := uuid.Parse(app.readParam(r, "id"))
+	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	fmt.Fprintf(w, "show the details of user %d\n", id)
+	user := data.User{
+		ID:                     id,
+		Email:                  "email",
+		FirstName:              "ff",
+		LastName:               "dd",
+		ProvinceCode:           "ee",
+		CountryCode:            "rr",
+		AdministrativeDivision: "rr",
+		AgeRange:               data.RangeNumber{},
+		FamilyNumberRange:      data.RangeNumber{},
+		CreatedAt:              time.Time{},
+		Meta: []data.MetaField{{
+			Key:       "Complete",
+			Namespace: "Registration",
+			Value:     "True",
+			Type:      "Bool",
+		}},
+	}
+
+	err = app.writeJSON(w, http.StatusOK, user, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+	}
 }
