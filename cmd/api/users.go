@@ -24,7 +24,21 @@ import (
 )
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new movie")
+	var input struct {
+		Email        string `json:"email"`
+		FirstName    string `json:"first_name"`
+		LastName     string `json:"last_name"`
+		ProvinceCode string `json:"province_code"`
+		CountryCode  string `json:"country_code"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +57,7 @@ func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) 
 		CountryCode:            "rr",
 		AdministrativeDivision: "rr",
 		AgeRange:               data.RangeNumber{UpLimit: 30, DownLimit: 25},
-		FamilyNumber:           1,
+		FamilyMemberNumber:     1,
 		CreatedAt:              time.Now(),
 		Meta: []data.MetaField{{
 			Key:       "Incomplete",
