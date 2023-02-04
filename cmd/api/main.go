@@ -85,9 +85,7 @@ func configSdk(cfg *config, logger *log.Logger) error {
 	defer cancel()
 
 	sdkCfg, err := sdkConfig.LoadDefaultConfig(
-		ctx,
-		sdkConfig.WithRegion(cfg.sdk.az),
-		sdkConfig.WithLogger(logger),
+		ctx, sdkConfig.WithRegion(cfg.sdk.az), sdkConfig.WithLogger(logger),
 	)
 	if err != nil {
 		return err
