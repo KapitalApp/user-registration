@@ -27,7 +27,7 @@ type User struct {
 	FirstName              string         `json:"first_name"`
 	LastName               string         `json:"last_name"`
 	ProvinceCode           string         `json:"province_code"`
-	CountryCode            string         `json:"country_code"`
+	CountryCodeAlpha2      string         `json:"country_code_alpha_2"`
 	AdministrativeDivision string         `json:"administrative_division"`
 	AgeRange               RangeNumber    `json:"age_range,omitempty"`
 	IncomeRange            RangeNumber    `json:"income_range,omitempty"`

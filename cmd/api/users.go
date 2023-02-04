@@ -54,7 +54,7 @@ func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) 
 		FirstName:              "ff",
 		LastName:               "dd",
 		ProvinceCode:           "ee",
-		CountryCode:            "rr",
+		CountryCodeAlpha2:      "rr",
 		AdministrativeDivision: "rr",
 		AgeRange:               data.RangeNumber{UpLimit: 30, DownLimit: 25},
 		FamilyMemberNumber:     1,
