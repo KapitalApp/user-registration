@@ -21,20 +21,35 @@ import (
 	"net/http"
 	"time"
 	"user-service.kptl.net/internal/data"
+	"user-service.kptl.net/internal/validator"
 )
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Email        string `json:"email"`
-		FirstName    string `json:"first_name"`
-		LastName     string `json:"last_name"`
-		ProvinceCode string `json:"province_code"`
-		CountryCode  string `json:"country_code"`
+		Email             string `json:"email"`
+		FirstName         string `json:"first_name"`
+		LastName          string `json:"last_name"`
+		ProvinceCode      string `json:"province_code"`
+		CountryCodeAlpha2 string `json:"country_code"`
 	}
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user := &data.User{
+		Email:             input.Email,
+		FirstName:         input.FirstName,
+		LastName:          input.LastName,
+		ProvinceCode:      input.ProvinceCode,
+		CountryCodeAlpha2: input.CountryCodeAlpha2,
+	}
+
+	v := validator.New()
+	if data.ValidateUser(v, user); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
