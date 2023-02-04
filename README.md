@@ -1,1 +1,1 @@
-# User Registration service - Kapital
+# User Service - Kapital
