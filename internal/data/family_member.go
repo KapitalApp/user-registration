@@ -16,6 +16,8 @@ limitations under the License.
 */
 package data
 
+import "user-service.kptl.net/internal/validator"
+
 type FamilyMember struct {
 	Type          string      `json:"type"`
 	FirstName     string      `json:"first_name"`
@@ -23,4 +25,9 @@ type FamilyMember struct {
 	AgeRange      RangeNumber `json:"age_range"`
 	IncomeRange   RangeNumber `json:"income_range"`
 	ExpensesRange RangeNumber `json:"expenses_range"`
+}
+
+func ValidateFamilyMember(v *validator.Validator, familyMember *FamilyMember) {
+	v.Check(familyMember.FirstName != "", "first_name", "must be provided")
+	v.Check(familyMember.LastName != "", "last_name", "must be provided")
 }

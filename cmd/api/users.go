@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,11 +40,14 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	user := &data.User{
-		Email:             input.Email,
-		FirstName:         input.FirstName,
-		LastName:          input.LastName,
-		ProvinceCode:      input.ProvinceCode,
-		CountryCodeAlpha2: input.CountryCodeAlpha2,
+		ID:                     uuid.New(),
+		Email:                  input.Email,
+		FirstName:              input.FirstName,
+		LastName:               input.LastName,
+		ProvinceCode:           input.ProvinceCode,
+		CountryCodeAlpha2:      input.CountryCodeAlpha2,
+		AdministrativeDivision: "province",
+		CreatedAt:              time.Now(),
 	}
 
 	v := validator.New()
