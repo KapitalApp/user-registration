@@ -76,7 +76,7 @@ func (m UserModel) TableExists() (bool, error) {
 	if err != nil {
 		var notFoundEx *types.ResourceNotFoundException
 		if errors.As(err, &notFoundEx) {
-			return false, fmt.Errorf("Table %v does not exist.\n", m.TableName)
+			return false, notFoundEx
 		}
 		return false, fmt.Errorf("Couldn't determine existence of table %v. Here's why: %v\n", m.TableName, err)
 	}
