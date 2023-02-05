@@ -16,14 +16,52 @@ limitations under the License.
 */
 package data
 
+import "time"
+
+type FamilyMember struct {
+	Type        string    `json:"type"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	DateOfBirth time.Time `json:"age_range"`
+	Income      int64     `json:"income_range"`
+	Expenses    int64     `json:"expenses_range"`
+}
+
+type Goal struct {
+	Date              time.Time     `json:"date"`
+	Title             string        `json:"title"`
+	ProgressLevel     string        `json:"progress_level"`
+	EstimatedDuration time.Duration `json:"estimated_duration"`
+	Description       string        `json:"description"`
+}
+
+type Milestone struct {
+	Date        time.Time `json:"date"`
+	Title       string    `json:"title"`
+	Type        string    `json:"type"`
+	Description string    `json:"description"`
+}
+
+type Protection struct {
+	Type           string    `json:"type"`
+	Premium        int64     `json:"premium"`
+	ClaimedDate    time.Time `json:"claimed_date"`
+	ExpirationDate time.Time `json:"expiration_date"`
+	Description    string    `json:"description"`
+}
+
+type Debt struct {
+	Type         string `json:"type"`
+	Cost         int64  `json:"cost"`
+	InterestRate int64  `json:"interest_rate"`
+	Term         int64  `json:"term"`
+	Collateral   string `json:"collateral"`
+	Description  string `json:"description"`
+}
+
 type MetaField struct {
 	Key       string `json:"key"`
 	Namespace string `json:"namespace"`
 	Value     string `json:"value"`
 	Type      string `json:"type"`
-}
-
-type RangeNumber struct {
-	UpLimit   int64 `json:"up_limit"`
-	DownLimit int64 `json:"down_limit"`
 }

@@ -25,40 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 	"time"
-	"user-service.kptl.net/internal/validator"
 )
-
-type User struct {
-	ID                     uuid.UUID      `json:"id"`
-	Email                  string         `json:"email"`
-	FirstName              string         `json:"first_name"`
-	LastName               string         `json:"last_name"`
-	ProvinceCode           string         `json:"province_code"`
-	CountryCodeAlpha2      string         `json:"country_code_alpha_2"`
-	AdministrativeDivision string         `json:"administrative_division"`
-	AgeRange               RangeNumber    `json:"age_range,omitempty"`
-	IncomeRange            RangeNumber    `json:"income_range,omitempty"`
-	ExpensesRange          RangeNumber    `json:"expenses_range,omitempty"`
-	FamilyMemberNumber     int64          `json:"family_member_number,omitempty"`
-	IsMarried              bool           `json:"is_married,omitempty"`
-	Spouse                 FamilyMember   `json:"spouse,omitempty"`
-	Dependent              []FamilyMember `json:"dependent,omitempty"`
-	Milestones             []Milestone    `json:"milestones,omitempty"`
-	Goals                  []Goal         `json:"goals,omitempty"`
-	CreatedAt              time.Time      `json:"created_at,omitempty"`
-	Meta                   []MetaField    `json:"meta,omitempty"`
-}
-
-func (user User) GetKey() map[string]types.AttributeValue {
-	id, err := attributevalue.Marshal(user.ID)
-	if err != nil {
-		panic(err)
-	}
-
-	return map[string]types.AttributeValue{"id": id}
-}
 
 type UserModel struct {
 	DynamoDbClient *dynamodb.Client
@@ -102,7 +70,7 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
-func (m UserModel) Get(id uuid.UUID) (*User, error) {
+func (m UserModel) Get(id string) (*User, error) {
 	user := User{ID: id}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -169,12 +137,4 @@ func (m UserModel) Delete(user *User) error {
 		return fmt.Errorf("Couldn't delete %v from the table. Here's why: %v\n", user.ID, err)
 	}
 	return nil
-}
-
-func ValidateUser(v *validator.Validator, user *User) {
-	v.Check(validator.Matches(user.Email, validator.EmailRX), "email", "must be valid")
-	v.Check(user.FirstName != "", "first_name", "must be provided")
-	v.Check(user.LastName != "", "last_name", "must be provided")
-	v.Check(len(user.CountryCodeAlpha2) == 2, "country_code_alpha_2", "must be two letters")
-	v.Check(user.ProvinceCode != "", "province_code", "must be provided")
 }

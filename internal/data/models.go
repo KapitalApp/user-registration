@@ -32,6 +32,6 @@ type Models struct {
 
 func NewModels(client *dynamodb.Client) Models {
 	return Models{
-		Users: UserModel{DynamoDbClient: client},
+		Users: UserModel{DynamoDbClient: client, TableName: "User"},
 	}
 }
