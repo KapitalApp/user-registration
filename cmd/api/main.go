@@ -85,7 +85,14 @@ func configSdk(cfg *config, logger *log.Logger) error {
 	defer cancel()
 
 	sdkCfg, err := sdkConfig.LoadDefaultConfig(
-		ctx, sdkConfig.WithRegion(cfg.sdk.az), sdkConfig.WithLogger(logger),
+		ctx,
+		sdkConfig.WithRegion(cfg.sdk.az),
+		// Test DynamoDB local
+		sdkConfig.WithEndpointResolver(aws.EndpointResolverFunc(
+			func(service, region string) (aws.Endpoint, error) {
+				return aws.Endpoint{URL: "http://localhost:8000"}, nil
+			})),
+		//sdkConfig.WithLogger(logger),
 	)
 	if err != nil {
 		return err
