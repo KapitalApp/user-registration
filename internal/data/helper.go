@@ -19,49 +19,49 @@ package data
 import "time"
 
 type FamilyMember struct {
-	Type        string    `json:"type"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
-	DateOfBirth time.Time `json:"age_range"`
-	Income      int64     `json:"income_range"`
-	Expenses    int64     `json:"expenses_range"`
+	Type        string `json:"type" dynamodbav:"type"`
+	FirstName   string `json:"first_name" dynamodbav:"firstName"`
+	LastName    string `json:"last_name" dynamodbav:"lastName"`
+	DateOfBirth string `json:"age_range" dynamodbav:"dateOfBirth"`
+	Income      int64  `json:"income_range" dynamodbav:"income"`
+	Expenses    int64  `json:"expenses_range" dynamodbav:"expenses"`
 }
 
 type Goal struct {
-	Date              time.Time     `json:"date"`
-	Title             string        `json:"title"`
-	ProgressLevel     string        `json:"progress_level"`
-	EstimatedDuration time.Duration `json:"estimated_duration"`
-	Description       string        `json:"description"`
+	Date              string        `json:"date" dynamodbav:"date"`
+	Title             string        `json:"title" dynamodbav:"title"`
+	ProgressLevel     string        `json:"progress_level" dynamodbav:"progressLevel"`
+	EstimatedDuration time.Duration `json:"estimated_duration" dynamodbav:"estimatedDuration"`
+	Description       string        `json:"description" dynamodbav:"description"`
 }
 
 type Milestone struct {
-	Date        time.Time `json:"date"`
-	Title       string    `json:"title"`
-	Type        string    `json:"type"`
-	Description string    `json:"description"`
+	Date        string `json:"date" dynamodbav:"date"`
+	Title       string `json:"title" dynamodbav:"title"`
+	Type        string `json:"type" dynamodbav:"type"`
+	Description string `json:"description" dynamodbav:"description"`
 }
 
 type Protection struct {
-	Type           string    `json:"type"`
-	Premium        int64     `json:"premium"`
-	ClaimedDate    time.Time `json:"claimed_date"`
-	ExpirationDate time.Time `json:"expiration_date"`
-	Description    string    `json:"description"`
+	Type           string `json:"type" dynamodbav:"type"`
+	Premium        int64  `json:"premium" dynamodbav:"premium"`
+	ClaimedDate    string `json:"claimed_date" dynamodbav:"claimedDate"`
+	ExpirationDate string `json:"expiration_date" dynamodbav:"expirationDate"`
+	Description    string `json:"description" dynamodbav:"description"`
 }
 
 type Debt struct {
-	Type         string `json:"type"`
-	Cost         int64  `json:"cost"`
-	InterestRate int64  `json:"interest_rate"`
-	Term         int64  `json:"term"`
-	Collateral   string `json:"collateral"`
-	Description  string `json:"description"`
+	Type         string `json:"type" dynamodbav:"type"`
+	Cost         int64  `json:"cost" dynamodbav:"cost"`
+	InterestRate int64  `json:"interest_rate" dynamodbav:"interestRate"`
+	Term         int64  `json:"term" dynamodbav:"term"`
+	Collateral   string `json:"collateral" dynamodbav:"collateral"`
+	Description  string `json:"description" dynamodbav:"description"`
 }
 
 type MetaField struct {
-	Key       string `json:"key"`
-	Namespace string `json:"namespace"`
-	Value     string `json:"value"`
-	Type      string `json:"type"`
+	Key       string `json:"key" dynamodbav:"key"`
+	Namespace string `json:"namespace" dynamodbav:"namespace"`
+	Value     string `json:"value" dynamodbav:"value"`
+	Type      string `json:"type" dynamodbav:"type"`
 }
