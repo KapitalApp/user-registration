@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"net/http"
@@ -56,7 +57,19 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	err = app.models.Users.Insert(user)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/users/%d", user.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,23 +79,15 @@ func (app *application) showUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := data.User{
-		ID:                     id,
-		Email:                  "email",
-		FirstName:              "ff",
-		LastName:               "dd",
-		ProvinceCode:           "ee",
-		CountryCodeAlpha2:      "rr",
-		AdministrativeDivision: "rr",
-		AgeRange:               data.RangeNumber{UpLimit: 30, DownLimit: 25},
-		FamilyMemberNumber:     1,
-		CreatedAt:              time.Now(),
-		Meta: []data.MetaField{{
-			Key:       "Incomplete",
-			Namespace: "Registration",
-			Value:     "True",
-			Type:      "Bool",
-		}},
+	user, err := app.models.Users.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
