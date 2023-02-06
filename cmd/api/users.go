@@ -68,7 +68,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/users/%d", user.ID))
+	headers.Set("Location", fmt.Sprintf("/v1/users/%s", user.ID))
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, headers)
 	if err != nil {
