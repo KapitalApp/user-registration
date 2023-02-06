@@ -20,32 +20,31 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"time"
 	"user-service.kptl.net/internal/validator"
 )
 
 type User struct {
-	ID                     string         `json:"id"`
-	Email                  string         `json:"email"`
-	FirstName              string         `json:"first_name"`
-	LastName               string         `json:"last_name"`
-	ProvinceCode           string         `json:"province_code"`
-	CountryCodeAlpha2      string         `json:"country_code_alpha_2"`
-	Currency               string         `json:"currency"`
-	AdministrativeDivision string         `json:"administrative_division"`
-	DateOfBirth            time.Time      `json:"age_range,omitempty"`
-	Income                 int64          `json:"income_range,omitempty"`
-	Expenses               int64          `json:"expenses_range,omitempty"`
-	FamilyMemberNumber     int64          `json:"family_member_number,omitempty"`
-	IsMarried              bool           `json:"is_married,omitempty"`
-	Spouse                 *FamilyMember  `json:"spouse,omitempty"`
-	Dependents             []FamilyMember `json:"dependent,omitempty"`
-	Milestones             []Milestone    `json:"milestones,omitempty"`
-	Goals                  []Goal         `json:"goals,omitempty"`
-	Protections            []Protection   `json:"protections"`
-	Debts                  []Debt         `json:"debts"`
-	CreatedAt              string         `json:"created_at,omitempty"`
-	Meta                   []MetaField    `json:"meta,omitempty"`
+	ID                     string         `json:"id" dynamodbav:"ID"`
+	Email                  string         `json:"email" dynamodbav:"email"`
+	FirstName              string         `json:"first_name" dynamodbav:"firstName"`
+	LastName               string         `json:"last_name" dynamodbav:"lastName"`
+	ProvinceCode           string         `json:"province_code" dynamodbav:"provinceCode"`
+	CountryCodeAlpha2      string         `json:"country_code_alpha_2" dynamodbav:"countryCodeAlpha2"`
+	Currency               string         `json:"currency" dynamodbav:"currency"`
+	AdministrativeDivision string         `json:"administrative_division" dynamodbav:"administrativeDivision"`
+	DateOfBirth            string         `json:"age,omitempty" dynamodbav:"dateOfBirth,omitempty"`
+	Income                 string         `json:"income,omitempty" dynamodbav:"income,omitempty"`
+	Expenses               string         `json:"expenses,omitempty" dynamodbav:"expenses,omitempty"`
+	FamilyMemberNumber     int64          `json:"family_member_number,omitempty" dynamodbav:"familyMemberNumber,omitempty"`
+	IsMarried              bool           `json:"is_married,omitempty" dynamodbav:"isMarried,omitempty"`
+	Spouse                 *FamilyMember  `json:"spouse,omitempty" dynamodbav:"spouse,omitempty"`
+	Dependents             []FamilyMember `json:"dependent,omitempty" dynamodbav:"dependents,omitempty"`
+	Milestones             []Milestone    `json:"milestones,omitempty" dynamodbav:"milestones,omitempty"`
+	Goals                  []Goal         `json:"goals,omitempty" dynamodbav:"goals,omitempty"`
+	Protections            []Protection   `json:"protections,omitempty" dynamodbav:"protections,omitempty"`
+	Debts                  []Debt         `json:"debts,omitempty" dynamodbav:"debts,omitempty"`
+	CreatedAt              string         `json:"created_at,omitempty" dynamodbav:"createdAt,omitempty"`
+	Meta                   []MetaField    `json:"meta,omitempty" dynamodbav:"meta,omitempty"`
 }
 
 func (user User) GetKey() map[string]types.AttributeValue {
