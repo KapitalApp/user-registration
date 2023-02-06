@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 	"user-service.kptl.net/internal/data"
 	"user-service.kptl.net/internal/validator"
@@ -32,7 +33,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		FirstName         string `json:"first_name"`
 		LastName          string `json:"last_name"`
 		ProvinceCode      string `json:"province_code"`
-		CountryCodeAlpha2 string `json:"country_code"`
+		CountryCodeAlpha2 string `json:"country_code_alpha_2"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -49,6 +50,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		ProvinceCode:           input.ProvinceCode,
 		CountryCodeAlpha2:      input.CountryCodeAlpha2,
 		AdministrativeDivision: "province",
+		Currency:               "CAD",
 		CreatedAt:              time.Now().Format("2006-01-02"),
 	}
 
@@ -123,14 +125,14 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	newAttributes := make(map[string]interface{})
-
-	inType := reflect.TypeOf(input)
-	inValue := reflect.ValueOf(input)
-	for i := 0; i < inValue.NumField(); i++ {
-		fieldValue := inValue.Field(i).String()
-		if fieldValue != "" && !inValue.Field(i).IsNil() {
-			fmt.Printf("%s: %s\n", inType.Field(i).Name, fieldValue)
-			newAttributes[inType.Field(i).Name] = fieldValue
+	val := reflect.ValueOf(input)
+	typ := reflect.TypeOf(input)
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		fieldValue := val.Field(i)
+		if !fieldValue.IsZero() {
+			fieldName := strings.ToLower(field.Name[:1]) + field.Name[1:]
+			newAttributes[fieldName] = fieldValue.Interface()
 		}
 	}
 
@@ -141,6 +143,30 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": attributes}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(app.readParam(r, "id"))
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Users.Delete(&data.User{ID: id.String()})
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "user successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

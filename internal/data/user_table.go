@@ -91,14 +91,20 @@ func (m UserModel) Get(id string) (*User, error) {
 	return &user, nil
 }
 
-func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map[string]map[string]interface{}, error) {
+func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	var response *dynamodb.UpdateItemOutput
-	var attributeMap map[string]map[string]interface{}
+	var attributeMap map[string]interface{}
 
 	var update expression.UpdateBuilder
+	first := true
 	for k, v := range newAttributes {
-		update.Set(expression.Name(k), expression.Value(v))
+		if first {
+			update = expression.Set(expression.Name(k), expression.Value(v))
+			first = false
+		} else {
+			update.Set(expression.Name(k), expression.Value(v))
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -130,11 +136,15 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 }
 
 func (m UserModel) Delete(user *User) error {
-	_, err := m.DynamoDbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := m.DynamoDbClient.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String(m.TableName), Key: user.GetKey(),
 	})
 	if err != nil {
 		return fmt.Errorf("Couldn't delete %v from the table. Here's why: %v\n", user.ID, err)
 	}
+
 	return nil
 }
