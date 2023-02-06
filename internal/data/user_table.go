@@ -106,11 +106,14 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 			update.Set(expression.Name(k), expression.Value(v))
 		}
 	}
+	update.Set(expression.Name("version"), expression.Value(user.Version+1))
+
+	condition := expression.Name("version").Equal(expression.Value(user.Version))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	expr, err := expression.NewBuilder().WithUpdate(update).Build()
+	expr, err := expression.NewBuilder().WithUpdate(update).WithCondition(condition).Build()
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't build expression for update. Here's why: %v\n", err)
 	} else {
@@ -120,10 +123,17 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 			ExpressionAttributeNames:  expr.Names(),
 			ExpressionAttributeValues: expr.Values(),
 			UpdateExpression:          expr.Update(),
+			ConditionExpression:       expr.Condition(),
 			ReturnValues:              types.ReturnValueUpdatedNew,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("Couldn't update id %v. Here's why: %v\n", user.ID, err)
+			var ccf *types.ConditionalCheckFailedException
+			switch {
+			case errors.As(err, &ccf):
+				return nil, ErrEditConflict
+			default:
+				return nil, fmt.Errorf("Couldn't update id %v. Here's why: %v\n", user.ID, err)
+			}
 		} else {
 			err = attributevalue.UnmarshalMap(response.Attributes, &attributeMap)
 			if err != nil {

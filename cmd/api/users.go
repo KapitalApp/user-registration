@@ -52,6 +52,7 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		AdministrativeDivision: "province",
 		Currency:               "CAD",
 		CreatedAt:              time.Now().Format("2006-01-02"),
+		Version:                1,
 	}
 
 	v := validator.New()
@@ -138,7 +139,12 @@ func (app *application) updateUserHandler(w http.ResponseWriter, r *http.Request
 
 	attributes, err := app.models.Users.Update(user, newAttributes)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
