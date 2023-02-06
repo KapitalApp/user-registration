@@ -43,7 +43,8 @@ type User struct {
 	Goals                  []Goal         `json:"goals,omitempty" dynamodbav:"goals,omitempty"`
 	Protections            []Protection   `json:"protections,omitempty" dynamodbav:"protections,omitempty"`
 	Debts                  []Debt         `json:"debts,omitempty" dynamodbav:"debts,omitempty"`
-	CreatedAt              string         `json:"created_at,omitempty" dynamodbav:"createdAt,omitempty"`
+	CreatedAt              string         `json:"created_at,omitempty" dynamodbav:"createdAt"`
+	Version                int64          `json:"-" dynamodbav:"version"`
 	Meta                   []MetaField    `json:"meta,omitempty" dynamodbav:"meta,omitempty"`
 }
 
