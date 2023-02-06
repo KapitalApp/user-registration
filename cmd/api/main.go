@@ -18,12 +18,9 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	sdkConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"log"
-	"net/http"
 	"os"
 	"time"
 	"user-service.kptl.net/internal/data"
@@ -78,22 +75,10 @@ func main() {
 		models: data.NewModels(dynamodb.NewFromConfig(cfg.sdk.config)),
 	}
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		ErrorLog:     log.New(logger, "", 0),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+	err = app.serve(logger)
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
-
-	logger.PrintInfo("starting server", map[string]string{
-		"addr": srv.Addr,
-		"env":  cfg.env,
-	})
-
-	err = srv.ListenAndServe()
-	logger.PrintFatal(err, nil)
 }
 
 func configSdk(cfg *config, logger *jsonlog.Logger) error {
