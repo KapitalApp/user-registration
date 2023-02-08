@@ -17,11 +17,13 @@ package main
 
 import (
 	"context"
+	"expvar"
 	"flag"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	sdkConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"os"
+	"runtime"
 	"time"
 	"user-service.kptl.net/internal/data"
 	"user-service.kptl.net/internal/jsonlog"
@@ -68,6 +70,16 @@ func main() {
 	if err != nil {
 		logger.PrintFatal(err, nil)
 	}
+
+	expvar.NewString("version").Set(version)
+
+	expvar.Publish("goroutines", expvar.Func(func() interface{} {
+		return runtime.NumGoroutine()
+	}))
+
+	expvar.Publish("timestamp", expvar.Func(func() interface{} {
+		return time.Now().Unix()
+	}))
 
 	app := &application{
 		config: cfg,

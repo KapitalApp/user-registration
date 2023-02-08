@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"expvar"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -27,10 +28,13 @@ func (app *application) routes() http.Handler {
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
+
 	router.HandlerFunc(http.MethodPost, "/v1/users", app.createUserHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/users/:id", app.showUserHandler)
 	router.HandlerFunc(http.MethodPatch, "/v1/users/:id", app.updateUserHandler)
 	router.HandlerFunc(http.MethodDelete, "/v1/users/:id", app.deleteUserHandler)
 
-	return app.recoverPanic(app.rateLimit(router))
+	router.Handler(http.MethodGet, "/debug/vars", expvar.Handler())
+
+	return app.metrics(app.recoverPanic(app.rateLimit(router)))
 }
