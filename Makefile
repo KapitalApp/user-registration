@@ -51,6 +51,7 @@ dynamodb/delete-table: confirm
 # QUALITY CONTROL
 # ==================================================================================== #
 
+## audit: tidy and vendor dependencies and format, vet and test all code
 .PHONY: audit
 audit:
 	@echo 'Tidying and verifying module dependencies...' go mod tidy
