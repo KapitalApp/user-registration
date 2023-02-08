@@ -33,6 +33,7 @@ type User struct {
 	Currency               string         `json:"currency" dynamodbav:"currency"`
 	AdministrativeDivision string         `json:"administrative_division" dynamodbav:"administrativeDivision"`
 	DateOfBirth            string         `json:"age,omitempty" dynamodbav:"dateOfBirth,omitempty"`
+	Occupation             string         `json:"occupation,omitempty" dynamodbav:"occupation,omitempty"`
 	Income                 string         `json:"income,omitempty" dynamodbav:"income,omitempty"`
 	Expenses               string         `json:"expenses,omitempty" dynamodbav:"expenses,omitempty"`
 	FamilyMemberNumber     int64          `json:"family_member_number,omitempty" dynamodbav:"familyMemberNumber,omitempty"`
@@ -43,6 +44,7 @@ type User struct {
 	Goals                  []Goal         `json:"goals,omitempty" dynamodbav:"goals,omitempty"`
 	Protections            []Protection   `json:"protections,omitempty" dynamodbav:"protections,omitempty"`
 	Debts                  []Debt         `json:"debts,omitempty" dynamodbav:"debts,omitempty"`
+	RiskTolerance          string         `json:"risk_tolerance" dynamodbav:"riskTolerance,omitempty"`
 	CreatedAt              string         `json:"created_at,omitempty" dynamodbav:"createdAt"`
 	Version                int64          `json:"-" dynamodbav:"version"`
 	Meta                   []MetaField    `json:"meta,omitempty" dynamodbav:"meta,omitempty"`
