@@ -46,7 +46,7 @@ func (m UserModel) TableExists() (bool, error) {
 		if errors.As(err, &notFoundEx) {
 			return false, notFoundEx
 		}
-		return false, fmt.Errorf("Couldn't determine existence of table %v. Here's why: %v\n", m.TableName, err)
+		return false, fmt.Errorf("couldn't determine existence of table %v. Here's why: %v", m.TableName, err)
 	}
 
 	return true, nil
@@ -64,7 +64,7 @@ func (m UserModel) Insert(user *User) error {
 		TableName: aws.String(m.TableName), Item: item,
 	})
 	if err != nil {
-		return fmt.Errorf("Couldn't add item to table. Here's why: %v\n", err)
+		return fmt.Errorf("couldn't add item to table. Here's why: %v", err)
 	}
 
 	return nil
@@ -80,11 +80,11 @@ func (m UserModel) Get(id string) (*User, error) {
 		Key: user.GetKey(), TableName: aws.String(m.TableName),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't get info about %v. Here's why: %v\n", id, err)
+		return nil, fmt.Errorf("couldn't get info about %v. Here's why: %v", id, err)
 	} else {
 		err = attributevalue.UnmarshalMap(response.Item, &user)
 		if err != nil {
-			return nil, fmt.Errorf("Couldn't unmarshal response. Here's why: %v\n", err)
+			return nil, fmt.Errorf("couldn't unmarshal response. Here's why: %v", err)
 		}
 	}
 
@@ -115,7 +115,7 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 
 	expr, err := expression.NewBuilder().WithUpdate(update).WithCondition(condition).Build()
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't build expression for update. Here's why: %v\n", err)
+		return nil, fmt.Errorf("couldn't build expression for update. Here's why: %v", err)
 	} else {
 		response, err = m.DynamoDbClient.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 			TableName:                 aws.String(m.TableName),
@@ -132,12 +132,12 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 			case errors.As(err, &ccf):
 				return nil, ErrEditConflict
 			default:
-				return nil, fmt.Errorf("Couldn't update id %v. Here's why: %v\n", user.ID, err)
+				return nil, fmt.Errorf("couldn't update id %v. Here's why: %v", user.ID, err)
 			}
 		} else {
 			err = attributevalue.UnmarshalMap(response.Attributes, &attributeMap)
 			if err != nil {
-				return nil, fmt.Errorf("Couldn't unmarshall update response. Here's why: %v\n", err)
+				return nil, fmt.Errorf("couldn't unmarshall update response. Here's why: %v", err)
 			}
 		}
 	}
@@ -153,7 +153,7 @@ func (m UserModel) Delete(user *User) error {
 		TableName: aws.String(m.TableName), Key: user.GetKey(),
 	})
 	if err != nil {
-		return fmt.Errorf("Couldn't delete %v from the table. Here's why: %v\n", user.ID, err)
+		return fmt.Errorf("couldn't delete %v from the table. Here's why: %v", user.ID, err)
 	}
 
 	return nil

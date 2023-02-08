@@ -79,8 +79,5 @@ func ValidateFamilyMember(v *validator.Validator, familyMember *FamilyMember) bo
 	current := len(v.Errors)
 	v.Check(familyMember.FirstName != "", "first_name", "must be provided")
 	v.Check(familyMember.LastName != "", "last_name", "must be provided")
-	if current != len(v.Errors) {
-		return false
-	}
-	return true
+	return current == len(v.Errors)
 }
