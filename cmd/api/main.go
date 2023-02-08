@@ -107,8 +107,8 @@ func configSdk(cfg *config, logger *jsonlog.Logger) error {
 	}
 
 	if cfg.env == "development" {
-		sdkCfg.EndpointResolver = aws.EndpointResolverFunc(
-			func(service, region string) (aws.Endpoint, error) {
+		sdkCfg.EndpointResolverWithOptions = aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 				return aws.Endpoint{URL: "http://localhost:8000"}, nil
 			})
 	}
