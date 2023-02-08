@@ -100,15 +100,17 @@ func configSdk(cfg *config, logger *jsonlog.Logger) error {
 	sdkCfg, err := sdkConfig.LoadDefaultConfig(
 		ctx,
 		sdkConfig.WithRegion(cfg.sdk.az),
-		// Test DynamoDB local
-		sdkConfig.WithEndpointResolver(aws.EndpointResolverFunc(
-			func(service, region string) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: "http://localhost:8000"}, nil
-			})),
 		sdkConfig.WithLogger(logger),
 	)
 	if err != nil {
 		return err
+	}
+
+	if cfg.env == "development" {
+		sdkCfg.EndpointResolver = aws.EndpointResolverFunc(
+			func(service, region string) (aws.Endpoint, error) {
+				return aws.Endpoint{URL: "http://localhost:8000"}, nil
+			})
 	}
 
 	cfg.sdk.config = sdkCfg
