@@ -26,8 +26,8 @@ import (
 	"os"
 	"runtime"
 	"time"
-	"user-service.kptl.net/internal/data"
-	"user-service.kptl.net/internal/jsonlog"
+	"user-service.mykapital.io/internal/data"
+	"user-service.mykapital.io/internal/jsonlog"
 )
 
 var (

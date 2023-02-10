@@ -25,7 +25,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"user-service.kptl.net/internal/jsonlog"
+	"user-service.mykapital.io/internal/jsonlog"
 )
 
 func (app *application) serve(logger *jsonlog.Logger) error {

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"user-service.kptl.net/internal/validator"
+	"user-service.mykapital.io/internal/validator"
 )
 
 type User struct {

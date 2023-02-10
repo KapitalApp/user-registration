@@ -1,4 +1,4 @@
-module user-service.kptl.net
+module user-service.mykapital.io
 
 go 1.18
 

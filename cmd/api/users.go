@@ -23,8 +23,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
-	"user-service.kptl.net/internal/data"
-	"user-service.kptl.net/internal/validator"
+	"user-service.mykapital.io/internal/data"
+	"user-service.mykapital.io/internal/validator"
 )
 
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
