@@ -1,4 +1,3 @@
-// Package validator /*
 /*
 Copyright 2023 The Kapital Authors
 
@@ -14,15 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package validator contains validation specifications.
 package validator
 
 import "regexp"
 
 var (
+	// EmailRX is the regex for a valid email address.
 	EmailRX = regexp.MustCompile("^[a-zA-Z\\d.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z\\d](?:[a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?(?:\\.[a-zA-Z\\d](?:[a-zA-Z\\d-]{0,61}[a-zA-Z\\d])?)*$")
 )
 
+// Validator validates a structure
 type Validator struct {
+	// Errors are the errors received when a specification fails
 	Errors map[string]string
 }
 
