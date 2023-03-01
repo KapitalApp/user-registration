@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package user defines the structure of the user and its dependent fields.
-// It also validates the restrictions for each field.
+// Package user defines the structure and the functionality of User.
+// It validates User instances and modify the "User" table in dynamodb.
 package user
 
 import (
@@ -138,6 +138,11 @@ func (user User) GetKey() map[string]types.AttributeValue {
 }
 
 // ValidateUser validates User data.
+//
+// The email address of the user should follow the regex validator.EmailRX.
+// First name, last name, province code, spouse (if applicable) and
+// dependent (if applicable) must be provided.
+// Spouse (if applicable) and dependents (if applicable) must be validated.
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(validator.Matches(user.Email, validator.EmailRX), "email", "must be valid")
 	v.Check(user.FirstName != "", "first_name", "must be provided")
@@ -146,7 +151,7 @@ func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.ProvinceCode != "", "province_code", "must be provided")
 
 	if user.IsMarried {
-		v.Check(user.Spouse != nil, "spouse", "must be provided if married")
+		v.Check(user.Spouse != nil, "spouse", "must be provided")
 		v.Check(ValidateFamilyMember(v, user.Spouse), "spouse", "must be valid")
 	} else if user.Dependents != nil {
 		for i, dep := range user.Dependents {
@@ -156,6 +161,8 @@ func ValidateUser(v *validator.Validator, user *User) {
 }
 
 // ValidateFamilyMember validates FamilyMember data.
+//
+// First name and last name must be provided.
 func ValidateFamilyMember(v *validator.Validator, familyMember *FamilyMember) bool {
 	current := len(v.Errors)
 	v.Check(familyMember.FirstName != "", "first_name", "must be provided")
