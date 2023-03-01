@@ -1,4 +1,3 @@
-// Package data /*
 /*
 Copyright 2023 The Kapital Authors
 
@@ -14,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package data
+
+package user
 
 import (
 	"context"
@@ -26,14 +26,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"time"
+	"user-service.mykapital.io/internal/data"
 )
 
-type UserModel struct {
+// Model is a model that handles CRUD operations for User instances.
+// It contains a DynamoDB service client that is used to act on the specified table.
+type Model struct {
+	// DynamoDbClient is the dynamodb client for User
 	DynamoDbClient *dynamodb.Client
-	TableName      string
+	// TableName is the table holding the data for User
+	TableName string
 }
 
-func (m UserModel) TableExists() (bool, error) {
+// TableExists determines whether a DynamoDB table exists.
+//
+// If the table does not exist, a not found error is returned
+// along with false.
+func (m Model) TableExists() (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -52,7 +61,10 @@ func (m UserModel) TableExists() (bool, error) {
 	return true, nil
 }
 
-func (m UserModel) Insert(user *User) error {
+// Insert inserts a new user in the table.
+//
+// If the user already exists, the user get replaced by the new user.
+func (m Model) Insert(user *User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -70,7 +82,10 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
-func (m UserModel) Get(id string) (*User, error) {
+// Get retrieves the user with the specific id.
+//
+// If no user was found with the given id, nothing will be returned.
+func (m Model) Get(id string) (*User, error) {
 	user := User{ID: id}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -91,7 +106,15 @@ func (m UserModel) Get(id string) (*User, error) {
 	return &user, nil
 }
 
-func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map[string]interface{}, error) {
+// Update updates a user that already exists in the DynamoDB table with the
+// new attributes. Current user attributes are not required to be passed.
+//
+// If the user does not already exist, it adds a new item to the table.
+// This function uses the `expression` package to build the update
+// expression.
+// The Version attribute of the user is automatically updated to handle
+// race conditions.
+func (m Model) Update(user *User, newAttributes map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	var response *dynamodb.UpdateItemOutput
 	var attributeMap map[string]interface{}
@@ -130,7 +153,7 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 			var ccf *types.ConditionalCheckFailedException
 			switch {
 			case errors.As(err, &ccf):
-				return nil, ErrEditConflict
+				return nil, data.ErrEditConflict
 			default:
 				return nil, fmt.Errorf("couldn't update id %v. Here's why: %v", user.ID, err)
 			}
@@ -145,7 +168,11 @@ func (m UserModel) Update(user *User, newAttributes map[string]interface{}) (map
 	return attributeMap, nil
 }
 
-func (m UserModel) Delete(user *User) error {
+// Delete deletes the user from the table in DynamoDB.
+//
+// The operation is idempotent; running it multiple times on
+// the same item or attribute does not result in an error response.
+func (m Model) Delete(user *User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
