@@ -146,16 +146,20 @@ func (user User) GetKey() map[string]types.AttributeValue {
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(validator.Matches(user.Email, validator.EmailRX), "email", "must be valid")
 	v.Check(user.FirstName != "", "first_name", "must be provided")
-	v.Check(user.LastName != "", "last_name", "must be provided")
 	v.Check(len(user.CountryCodeAlpha2) == 2, "country_code_alpha_2", "must be two letters")
 	v.Check(user.ProvinceCode != "", "province_code", "must be provided")
 
 	if user.IsMarried {
 		v.Check(user.Spouse != nil, "spouse", "must be provided")
-		v.Check(ValidateFamilyMember(v, user.Spouse), "spouse", "must be valid")
-	} else if user.Dependents != nil {
+		if user.Spouse != nil {
+			ValidateFamilyMember(v, user.Spouse, "spouse")
+		}
+	}
+
+	if user.Dependents != nil {
 		for i, dep := range user.Dependents {
-			v.Check(ValidateFamilyMember(v, &dep), fmt.Sprintf("dependents_%d", i), "must be valid")
+			depName := fmt.Sprintf("dependent_%d", i+1)
+			ValidateFamilyMember(v, &dep, depName)
 		}
 	}
 }
@@ -163,9 +167,7 @@ func ValidateUser(v *validator.Validator, user *User) {
 // ValidateFamilyMember validates FamilyMember data.
 //
 // First name and last name must be provided.
-func ValidateFamilyMember(v *validator.Validator, familyMember *FamilyMember) bool {
-	current := len(v.Errors)
-	v.Check(familyMember.FirstName != "", "first_name", "must be provided")
-	v.Check(familyMember.LastName != "", "last_name", "must be provided")
-	return current == len(v.Errors)
+func ValidateFamilyMember(v *validator.Validator, familyMember *FamilyMember, uniqueName string) {
+	v.Check(familyMember.Type != "", uniqueName+"_type", "must be provided")
+	v.Check(familyMember.FirstName != "", uniqueName+"_first_name", "must be provided")
 }
