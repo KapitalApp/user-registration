@@ -20,16 +20,17 @@ package user
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"time"
 	"user-service.mykapital.io/internal/validator"
 )
 
 // User struct is the main struct declaring user fields.
 type User struct {
 	// ID is the UUID of the user.
-	ID           string `dynamodbav:"ID"` // dynamodbav is the representation of the field as a dynamodb attribute.
+	ID           string `dynamodbav:"userID"` // dynamodbav is the representation of the field as a dynamodb attribute.
 	Email        string `dynamodbav:"email"`
 	FirstName    string `dynamodbav:"firstName"`
 	LastName     string `dynamodbav:"lastName"`
@@ -134,7 +135,7 @@ func (user User) GetKey() map[string]types.AttributeValue {
 	if err != nil {
 		panic(err)
 	}
-	return map[string]types.AttributeValue{"ID": id}
+	return map[string]types.AttributeValue{"userID": id}
 }
 
 // ValidateUser validates User data.
