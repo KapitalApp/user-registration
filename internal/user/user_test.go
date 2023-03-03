@@ -17,8 +17,9 @@ limitations under the License.
 package user
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"user-service.mykapital.io/internal/validator"
 )
 
