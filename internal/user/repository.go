@@ -20,13 +20,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"time"
-	"user-service.mykapital.io/internal/data"
+	xerrors "user-service.mykapital.io/internal/errors"
 )
 
 // Model is a model that handles CRUD operations for User instances.
@@ -36,11 +37,77 @@ type Model struct {
 	DynamoDbClient *dynamodb.Client
 	// TableName is the table holding the data for User
 	TableName string
+	// IndexName is the index used for range searching
+	IndexName string
+}
+
+// CreateTable creates a DynamoDB table with a primary key defined as
+// a string named `userID`, and a global secondary index based on `email`.
+//
+// * SHOULD ONLY BE USED DURING TESTING *
+//
+// This function uses NewTableExistsWaiter to wait for the table to be created by
+// DynamoDB before it returns.
+func (m Model) CreateTable() (*types.TableDescription, error) {
+	var tableDesc *types.TableDescription
+	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Minute)
+	defer cancel()
+
+	table, err := m.DynamoDbClient.CreateTable(ctx, &dynamodb.CreateTableInput{
+		TableName: aws.String(m.TableName),
+		AttributeDefinitions: []types.AttributeDefinition{{
+			AttributeName: aws.String("userID"),
+			AttributeType: types.ScalarAttributeTypeS,
+		}, {
+			AttributeName: aws.String("email"),
+			AttributeType: types.ScalarAttributeTypeS,
+		}},
+		KeySchema: []types.KeySchemaElement{{
+			AttributeName: aws.String("userID"),
+			KeyType:       types.KeyTypeHash,
+		}},
+		ProvisionedThroughput: &types.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(1),
+			WriteCapacityUnits: aws.Int64(1),
+		},
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
+			IndexName: &m.IndexName,
+			KeySchema: []types.KeySchemaElement{{
+				AttributeName: aws.String("email"),
+				KeyType:       types.KeyTypeHash,
+			}},
+			Projection: &types.Projection{
+				ProjectionType:   types.ProjectionTypeInclude,
+				NonKeyAttributes: []string{"userID"},
+			},
+			ProvisionedThroughput: &types.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(1),
+				WriteCapacityUnits: aws.Int64(1),
+			},
+		}},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't create table %v. Here's why: %v\n", m.TableName, err)
+	}
+
+	waiter := dynamodb.NewTableExistsWaiter(m.DynamoDbClient)
+
+	err = waiter.Wait(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String(m.TableName)}, 5*time.Minute)
+	if err != nil {
+		return nil, fmt.Errorf("Wait for table exists failed. Here's why: %v\n", err)
+	}
+
+	tableDesc = table.TableDescription
+
+	return tableDesc, nil
 }
 
 // TableExists determines whether a DynamoDB table exists.
 //
-// If the table does not exist, a not found error is returned
+// * SHOULD ONLY BE USED DURING TESTING *
+//
+// If the table does not exist, a not found errors is returned
 // along with false.
 func (m Model) TableExists() (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -86,24 +153,25 @@ func (m Model) Insert(user *User) error {
 //
 // If no user was found with the given id, nothing will be returned.
 func (m Model) Get(id string) (*User, error) {
-	user := User{ID: id}
+	userIn := User{ID: id}
+	userOut := &User{}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	response, err := m.DynamoDbClient.GetItem(ctx, &dynamodb.GetItemInput{
-		Key: user.GetKey(), TableName: aws.String(m.TableName),
+		Key: userIn.GetKey(), TableName: aws.String(m.TableName),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get info about %v. Here's why: %v", id, err)
 	} else {
-		err = attributevalue.UnmarshalMap(response.Item, &user)
+		err = attributevalue.UnmarshalMap(response.Item, userOut)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't unmarshal response. Here's why: %v", err)
 		}
 	}
 
-	return &user, nil
+	return userOut, nil
 }
 
 // Update updates a user that already exists in the DynamoDB table with the
@@ -153,7 +221,7 @@ func (m Model) Update(user *User, newAttributes map[string]interface{}) (map[str
 			var ccf *types.ConditionalCheckFailedException
 			switch {
 			case errors.As(err, &ccf):
-				return nil, data.ErrEditConflict
+				return nil, xerrors.ErrEditConflict
 			default:
 				return nil, fmt.Errorf("couldn't update id %v. Here's why: %v", user.ID, err)
 			}
@@ -181,6 +249,28 @@ func (m Model) Delete(user *User) error {
 	})
 	if err != nil {
 		return fmt.Errorf("couldn't delete %v from the table. Here's why: %v", user.ID, err)
+	}
+
+	return nil
+}
+
+// DeleteTable deletes the DynamoDB table and all of its data.
+//
+// * SHOULD ONLY BE USED DURING TESTING *
+//
+// If a table is in CREATING or UPDATING states, then DynamoDB returns a
+// ResourceInUseException. If the specified table does not exist, DynamoDB
+// returns a ResourceNotFoundException. If table is already in the DELETING
+// state, no error is returned.
+func (m Model) DeleteTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	_, err := m.DynamoDbClient.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+		TableName: aws.String(m.TableName),
+	})
+	if err != nil {
+		return fmt.Errorf("Couldn't delete table %v. Here's why: %v\n", m.TableName, err)
 	}
 
 	return nil
